@@ -1,17 +1,17 @@
-# frontend/Dockerfile
-FROM node:22
+FROM node:22-slim
 
 WORKDIR /app
 
-COPY package.json .
+COPY package.json package-lock.json ./
 
-RUN npm install --omit=optional --silent
+# Clear npm cache and remove any existing node_modules and package-lock
+RUN rm -rf node_modules package-lock.json || true && npm cache clean --force
 
-RUN npm install @rollup/rollup-linux-arm64-gnu
+# Install dependencies with platform-specific flags
+RUN npm install
 
 COPY . .
 
 EXPOSE 5173
 
-# Generate config.js from environment variables and start the dev server
-CMD ["sh", "-c", "chmod +x ./generate-config.sh && ./generate-config.sh && npm run dev -- --host 0.0.0.0"]
+CMD ["npm", "run", "dev", "--", "--host"]

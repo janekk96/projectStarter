@@ -1,81 +1,115 @@
-# Makefile
+# Makefile for managing FastAPI + Vite + Postgres starter (with npm)
 
-# Docker Compose main commands
-build:
-	@echo "Building Docker images..."
-	@docker compose build
+# Default target
+.DEFAULT_GOAL := help
 
-build-clean:
-	@echo "Building Docker images without cache..."
-	@docker compose build --no-cache
+# Variables
+COMPOSE = docker compose
+FRONTEND_CONTAINER = frontend
+BACKEND_CONTAINER = backend
 
-up:
-	@echo "Starting Docker containers..."
-	@docker compose up -d
+## —— 🛠️ Project Management —————————————————————————————————————————————
 
-down:
-	@echo "Stopping Docker containers..."
-	@docker compose down
+help: ## Show this help
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-ps:
-	@echo "Listing Docker containers..."
-	@docker compose ps
+up: ## Start all services (detached)
+	$(COMPOSE) up -d
 
-# Logs commands
-logs-backend:
-	@echo "Showing logs for backend..."
-	@docker compose logs -f backend
+up-build: ## Build and start all services
+	$(COMPOSE) up -d --build
 
-logs-frontend:
-	@echo "Showing logs for frontend..."
-	@docker compose logs -f frontend
+build-clean: ## Build and start all services, removing old containers
+	$(COMPOSE) build --no-cache
 
-logs-keycloak:
-	@echo "Showing logs for keycloak..."
-	@docker compose logs -f keycloak
+build-frontend: ## Build frontend container
+	$(COMPOSE) build $(FRONTEND_CONTAINER) --no-cache 
 
-logs-db:
-	@echo "Showing logs for db..."
-	@docker compose logs -f db
+build-backend: ## Build backend container
+	$(COMPOSE) build $(BACKEND_CONTAINER) --no-cache
 
-logs-nginx:
-	@echo "Showing logs for nginx..."
-	@docker compose logs -f nginx
+rebuild:
+	$(COMPOSE) down
+	$(COMPOSE) up -d --build
 
-# Restart commands
-restart:
-	@echo "Restarting all containers..."
-	@docker compose restart
-	
-restart-backend:
-	@echo "Restarting backend container..."
-	@docker compose restart backend
+rebuild-frontend: ## Rebuild frontend container
+	$(COMPOSE) down
+	$(COMPOSE) build $(FRONTEND_CONTAINER) --no-cache
+	$(COMPOSE) up -d 
 
-restart-frontend:
-	@echo "Restarting frontend container..."
-	@docker compose restart frontend
+rebuild-backend: ## Rebuild backend container
+	$(COMPOSE) down
+	$(COMPOSE) build $(BACKEND_CONTAINER) --no-cache
+	$(COMPOSE) up -d 
 
-restart-keycloak:
-	@echo "Restarting keycloak container..."
-	@docker compose restart keycloak
+down: ## Stop all services
+	$(COMPOSE) down
 
-restart-db:
-	@echo "Restarting db container..."
-	@docker compose restart db
+logs: ## Show logs for all services
+	$(COMPOSE) logs -f
 
-restart-nginx:
-	@echo "Restarting nginx container..."
-	@docker compose restart nginx
+ps: ## Show running services
+	$(COMPOSE) ps
 
-# Execute commands
-exec-backend:
-	@echo "Executing command in backend container..."
-	@docker compose exec backend bash
+prune: ## Remove stopped containers, unused networks, images, and volumes
+	$(COMPOSE) down --rmi all --volumes --remove-orphans
+	@docker system prune -af
 
-exec-frontend:
-	@echo "Executing command in frontend container..."
-	@docker compose exec frontend bash
+## —— 🖥️ Backend ———————————————————————————————————————————————
 
-exec-db:
-	@echo "Executing command in db container..."
-	@docker compose exec db psql -U ${POSTGRES_USER} -d ${POSTGRES_DB}
+backend-shell: ## Open a shell inside backend container
+	$(COMPOSE) exec $(BACKEND_CONTAINER) /bin/bash
+
+backend-logs: ## Show backend logs
+	$(COMPOSE) logs -f $(BACKEND_CONTAINER)
+
+backend-test: ## Run backend tests (pytest)
+	$(COMPOSE) exec $(BACKEND_CONTAINER) pytest
+
+## —— 💻 Frontend ————————————————————————————————————————————————
+
+frontend-shell: ## Open a shell inside frontend container
+	$(COMPOSE) exec $(FRONTEND_CONTAINER) sh
+
+frontend-logs: ## Show frontend logs
+	$(COMPOSE) logs -f $(FRONTEND_CONTAINER)
+
+frontend-install: ## Install frontend dependencies using npm
+	$(COMPOSE) exec $(FRONTEND_CONTAINER) npm install
+
+frontend-dev: ## Run Vite dev server
+	$(COMPOSE) exec $(FRONTEND_CONTAINER) npm dev
+
+frontend-build: ## Build frontend (Vite)
+	$(COMPOSE) exec $(FRONTEND_CONTAINER) npm build
+
+frontend-preview: ## Preview production build
+	$(COMPOSE) exec $(FRONTEND_CONTAINER) npm preview
+
+## —— 🗄️ Database ————————————————————————————————————————————————
+
+db-shell: ## Open psql shell in database container
+	$(COMPOSE) exec db psql -U postgres -d appdb
+
+db-reset: ## Drop and recreate database (⚠️ will delete data)
+	$(COMPOSE) exec db psql -U postgres -c "DROP DATABASE IF EXISTS appdb;"
+	$(COMPOSE) exec db psql -U postgres -c "CREATE DATABASE appdb;"
+
+## —— 🔐 Authentication Testing ————————————————————————————————————————
+
+setup-venv: ## Set up virtual environment for testing
+	python3 -m venv venv
+	./venv/bin/pip install requests
+
+test-auth: ## Test JWT authentication endpoints
+	./venv/bin/python test_auth.py
+
+test-register: ## Test user registration only
+	curl -X POST "http://localhost:8000/auth/register" \
+		-H "Content-Type: application/json" \
+		-d '{"email":"test@example.com","password":"testpassword123","is_active":true,"is_superuser":false,"is_verified":false}'
+
+test-login: ## Test user login only
+	curl -X POST "http://localhost:8000/auth/jwt/login" \
+		-H "Content-Type: application/x-www-form-urlencoded" \
+		-d "username=test@example.com&password=testpassword123"
