@@ -1,69 +1,96 @@
-# React + TypeScript + Vite
+# Frontend Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a React + TypeScript + Vite frontend application with comprehensive authentication features and a complete testing suite.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Authentication**: Complete login/register system with JWT tokens
+- **Protected Routes**: Route-based authentication protection
+- **Modern UI**: Built with Tailwind CSS and Radix UI components
+- **Type Safety**: Full TypeScript support
+- **Testing**: Comprehensive test suite with Vitest and Testing Library
+- **Development Tools**: ESLint, hot reload, and development server
 
-## Expanding the ESLint configuration
+## Available Scripts
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- `npm run lint` - Run ESLint
+- `npm run test` - Run tests in watch mode
+- `npm run test:run` - Run tests once
+- `npm run test:coverage` - Run tests with coverage
+- `npm run test:ui` - Run tests with UI interface
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Testing
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+This project includes a comprehensive testing suite with:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- **Unit Tests**: Components, hooks, and utilities
+- **Integration Tests**: Authentication flows and route protection
+- **Component Tests**: User interactions and form validation
+- **Coverage Reports**: Detailed test coverage analysis
+
+For detailed testing information, see [TESTING.md](./TESTING.md).
+
+### Quick Test Commands
+
+```bash
+# Run all tests
+npm run test:run
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run specific test categories
+./test-runner.sh unit       # Unit tests only
+./test-runner.sh components # Component tests only
+./test-runner.sh quick      # Quick subset of tests
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Architecture
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Key Components
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- **AuthContext**: Manages authentication state globally
+- **ProtectedRoute**: Wrapper for protected pages
+- **API Layer**: Centralized API calls with axios
+- **Pages**: Login, Register, Dashboard, Home
+- **UI Components**: Reusable components built with Radix UI
+
+### Authentication Flow
+
+1. User enters credentials on Login/Register page
+2. API call is made to backend authentication endpoint
+3. JWT token is stored in localStorage
+4. AuthContext updates with user information
+5. Protected routes become accessible
+6. Token is included in all subsequent API requests
+
+## Project Structure
+
 ```
+src/
+├── components/          # Reusable UI components
+│   ├── ui/             # Base UI components (buttons, forms, etc.)
+│   └── ProtectedRoute.tsx
+├── contexts/           # React contexts
+│   └── AuthContext.tsx
+├── hooks/              # Custom React hooks
+│   └── useAuth.ts
+├── lib/                # Utilities and API
+│   ├── api.ts          # API client and endpoints
+│   └── utils.ts        # Utility functions
+├── pages/              # Page components
+│   ├── Dashboard.tsx
+│   ├── Home.tsx
+│   ├── Login.tsx
+│   ├── PostLogout.tsx
+│   └── Register.tsx
+├── test/               # Test utilities
+│   ├── setup.ts        # Test setup and global mocks
+│   └── test-utils.tsx  # Custom render function
+└── __tests__/          # Test files (alongside source files)
+```
+
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
