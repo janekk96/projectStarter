@@ -22,6 +22,7 @@ services:
     # Remove port mapping - only accessible through nginx
     volumes:
       - ./backend/app:/app/app
+      - ./backend/tests:/app/tests
 
   frontend:
     build: ./frontend

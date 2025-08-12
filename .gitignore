@@ -1,4 +1,4 @@
 volumes/**
 **/.DS_Store
 **/.env
-backend/app/__pycache__/**
+backend/**/__pycache__/**
