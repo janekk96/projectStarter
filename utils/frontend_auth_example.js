@@ -2,7 +2,7 @@
 // This shows how to integrate with the JWT authentication from a frontend app
 
 class AuthService {
-  constructor(baseUrl = "http://localhost:8000") {
+  constructor(baseUrl = "http://localhost/api") {
     this.baseUrl = baseUrl;
     this.token = localStorage.getItem("accessToken");
   }

@@ -7,6 +7,7 @@
 COMPOSE = docker compose
 FRONTEND_CONTAINER = frontend
 BACKEND_CONTAINER = backend
+NGINX_CONTAINER = nginx
 
 ## —— 🛠️ Project Management —————————————————————————————————————————————
 
@@ -28,6 +29,9 @@ build-frontend: ## Build frontend container
 build-backend: ## Build backend container
 	$(COMPOSE) build $(BACKEND_CONTAINER) --no-cache
 
+build-nginx: ## Build nginx container
+	$(COMPOSE) build $(NGINX_CONTAINER) --no-cache
+
 rebuild:
 	$(COMPOSE) down
 	$(COMPOSE) up -d --build
@@ -40,6 +44,11 @@ rebuild-frontend: ## Rebuild frontend container
 rebuild-backend: ## Rebuild backend container
 	$(COMPOSE) down
 	$(COMPOSE) build $(BACKEND_CONTAINER) --no-cache
+	$(COMPOSE) up -d 
+
+rebuild-nginx: ## Rebuild nginx container
+	$(COMPOSE) down
+	$(COMPOSE) build $(NGINX_CONTAINER) --no-cache
 	$(COMPOSE) up -d 
 
 down: ## Stop all services
@@ -86,6 +95,20 @@ frontend-build: ## Build frontend (Vite)
 frontend-preview: ## Preview production build
 	$(COMPOSE) exec $(FRONTEND_CONTAINER) npm preview
 
+## —— 🌐 Nginx ——————————————————————————————————————————————————
+
+nginx-shell: ## Open a shell inside nginx container
+	$(COMPOSE) exec $(NGINX_CONTAINER) sh
+
+nginx-logs: ## Show nginx logs
+	$(COMPOSE) logs -f $(NGINX_CONTAINER)
+
+nginx-reload: ## Reload nginx configuration
+	$(COMPOSE) exec $(NGINX_CONTAINER) nginx -s reload
+
+nginx-test: ## Test nginx configuration
+	$(COMPOSE) exec $(NGINX_CONTAINER) nginx -t
+
 ## —— 🗄️ Database ————————————————————————————————————————————————
 
 db-shell: ## Open psql shell in database container
@@ -102,14 +125,14 @@ setup-venv: ## Set up virtual environment for testing
 	./venv/bin/pip install requests
 
 test-auth: ## Test JWT authentication endpoints
-	./venv/bin/python test_auth.py
+	./venv/bin/python ./utils/test_auth.py
 
 test-register: ## Test user registration only
-	curl -X POST "http://localhost:8000/auth/register" \
+	curl -X POST "http://localhost/api/auth/register" \
 		-H "Content-Type: application/json" \
 		-d '{"email":"test@example.com","password":"testpassword123","is_active":true,"is_superuser":false,"is_verified":false}'
 
 test-login: ## Test user login only
-	curl -X POST "http://localhost:8000/auth/jwt/login" \
+	curl -X POST "http://localhost/api/auth/jwt/login" \
 		-H "Content-Type: application/x-www-form-urlencoded" \
 		-d "username=test@example.com&password=testpassword123"

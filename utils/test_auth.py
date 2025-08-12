@@ -8,7 +8,7 @@ import json
 
 
 def test_auth_endpoints():
-    base_url = "http://localhost:8000"
+    base_url = "http://localhost/api"
 
     print("🔐 Testing JWT Authentication Endpoints\n")
 

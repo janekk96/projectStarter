@@ -19,18 +19,27 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL}
       SECRET: ${SECRET}
-    ports:
-      - '8000:8000'
+    # Remove port mapping - only accessible through nginx
     volumes:
       - ./backend/app:/app/app
 
   frontend:
     build: ./frontend
     restart: unless-stopped
-    ports:
-      - '5173:5173'
+    # Remove port mapping - only accessible through nginx
     environment:
       VITE_API_URL: ${VITE_API_URL}
     volumes:
       - ./frontend:/app
       - /app/node_modules  # Prevent host node_modules from overriding container node_modules
+
+  nginx:
+    build: ./nginx
+    restart: unless-stopped
+    ports:
+      - '80:80'
+    depends_on:
+      - backend
+      - frontend
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
