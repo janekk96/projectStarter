@@ -36,6 +36,10 @@ rebuild:
 	$(COMPOSE) down
 	$(COMPOSE) up -d --build
 
+down-up: ## Stop all services and then start them again
+	$(COMPOSE) down
+	$(COMPOSE) up -d
+
 rebuild-frontend: ## Rebuild frontend container
 	$(COMPOSE) down
 	$(COMPOSE) build $(FRONTEND_CONTAINER) --no-cache
@@ -63,6 +67,9 @@ ps: ## Show running services
 prune: ## Remove stopped containers, unused networks, images, and volumes
 	$(COMPOSE) down --rmi all --volumes --remove-orphans
 	@docker system prune -af
+
+restart: ## Restart all services
+	$(COMPOSE) restart
 
 ## —— 🖥️ Backend ———————————————————————————————————————————————
 
