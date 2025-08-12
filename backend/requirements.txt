@@ -11,3 +11,8 @@ python-multipart
 python-dotenv
 pydantic[email]
 pydantic-settings
+pytest
+pytest-asyncio
+pytest-cov
+aiosqlite
+httpx

@@ -82,6 +82,15 @@ backend-logs: ## Show backend logs
 backend-test: ## Run backend tests (pytest)
 	$(COMPOSE) exec $(BACKEND_CONTAINER) pytest
 
+backend-test-verbose: ## Run backend tests with verbose output
+	$(COMPOSE) exec $(BACKEND_CONTAINER) pytest -v
+
+backend-test-coverage: ## Run backend tests with coverage report
+	$(COMPOSE) exec $(BACKEND_CONTAINER) pytest --cov=app --cov-report=term-missing
+
+backend-test-specific: ## Run specific test file (usage: make backend-test-specific TEST=test_auth.py)
+	$(COMPOSE) exec $(BACKEND_CONTAINER) pytest tests/$(TEST) -v
+
 ## —— 💻 Frontend ————————————————————————————————————————————————
 
 frontend-shell: ## Open a shell inside frontend container
